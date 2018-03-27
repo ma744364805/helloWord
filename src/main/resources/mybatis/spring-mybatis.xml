@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+         http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+    
+    <!--引入数据库的properties文件 在此处使用了此功能 其他地方则不能再次使用 spring默认读取一次此配置 其他则会被忽略故而不会生效 -->
+	<context:property-placeholder location="classpath:*/*.properties"/>
+	
+	<!--配置扫描注解,不扫描@Controller注解 -->
+	<context:component-scan base-package="com.*">
+	  <context:exclude-filter type="annotation"  expression="org.springframework.stereotype.Controller"/> 
+	</context:component-scan>
+	
+	<!-- 配置数据源，使用的是alibaba的Druid(德鲁伊)数据源 使用别人的数据源需要插入相关架包 -->
+	<bean name="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		init-method="init" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driver}" />
+        <property name="url" value="${jdbc.url}" />
+        <property name="username" value="${jdbc.username}" />
+        <property name="password" value="${jdbc.password}" />
+	</bean>
+
+	<!-- 配置Mybatis的 ：sqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 实例化sqlSessionFactory时需要使用上述配置好的数据源以及SQL映射文件 -->
+		<property name="dataSource" ref="dataSource" />
+		<!-- mybatis配置文件路径 -->
+		<!-- <property name="configLocation" value="classpath:mybatis/mybatis.xml" /> -->
+		
+		<!-- 扫描sql配置文件:mapper需要的xml文件  -->
+		<property name="mapperLocations" value="classpath:mapper/*.xml" />
+		<!-- 可以写在mybatis-config中 也可以直接扫描mapper.xml--> 
+	</bean>
+
+	<!-- 配置扫描器 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 扫描 dao包以及它的子包下的所有映射接口类 -->
+		<property name="basePackage" value="com.wanheng.dao" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+	</bean>
+	<!-- 开启基于注解的事物 -->
+	<tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
+	<!-- (事务管理)transaction manager, use JtaTransactionManager for global tx -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+</beans>

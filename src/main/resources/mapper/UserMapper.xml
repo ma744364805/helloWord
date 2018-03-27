@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wanheng.dao.UserDao">
+
+	
+	
+	<select id="getName" resultType="com.wanheng.entity.UserEntity">
+	 SELECT * FROM user WHERE name LIKE '%${_parameter}%'
+	</select>
+	
+	
+	<select id="getAll" resultType="com.wanheng.entity.UserEntity">
+		select * from
+		user
+	</select>
+	<insert id="addUser" parameterType="com.wanheng.entity.UserEntity">
+		INSERT INTO user ( 
+		<!-- 引用外部定义的sql -->
+		<include refid="insertColumn"></include>
+		) VALUES
+		(#{name},#{password})
+	</insert>
+	<update id="updataUser">
+	
+	</update>
+	
+	<delete id="deleteUser" parameterType="int">
+		DELETE FROM user
+		WHERE id=#{id}
+	</delete>
+	<!-- 
+	prefix:给拼接后的整个字符串加一个前缀
+	prefixOverrides：前缀覆盖，去掉整个字符串前面多余的字符
+	suffix：后缀，给拼接后的整个字符串加一个后缀
+	suffixOverrides：后缀覆盖，去掉整个字符串后面多余的字符
+	 -->
+	<update id="updateUser" parameterType="com.wanheng.entity.UserEntity">
+		update user
+		<trim prefix="set" suffixOverrides="," >
+			<if test="name!=null">
+				name=#{name},
+			</if>
+			<if test="password!=null">
+				password=#{password},
+			</if>
+		</trim>
+		where id=#{id}
+	</update>
+	
+	
+	
+	
+	<!-- 多个参数
+	命名参数：明确指定封装参数时map的key：@Param("id")
+	key:使用@Param注解指定的值
+	value:参数值
+	 -->
+	
+	<select id="">
+	select * from user
+	<where>
+	
+		<choose>
+		<!-- when : 如果带了id就用id查，带name就用name查 ，只会查一个-->
+		 <when test="id!=null">
+		 	id=#{id}
+		 </when>
+		  <when test="name!=null">
+		 	name=#{name}
+		 </when>
+		 <otherwise>
+		 <!-- otherwise: 查所有 -->
+			1=1
+		 </otherwise>
+		</choose>
+	</where>
+	</select>
+	
+	
+	
+	<!-- 
+	_parameter:代表整个参数
+		）单个参数_parameter 就代表单个参数
+		）多个参数会被封装成一个map;代表整个map
+		
+	_databaseId:如果配置了databaseIdProvider标签
+	  	_databaseId就代表当前数据库的别名
+	
+	 -->
+	
+	
+	<!-- 抽取可重用的字段
+	
+	1.经常要查询的列名，或者插入用的列名抽取出来方便引用
+	2.inclue来引用已经抽取的
+	 -->
+	<sql id="insertColumn">
+	name, password
+	</sql>
+	
+	
+	
+	
+		
+</mapper>
